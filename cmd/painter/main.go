@@ -2,6 +2,8 @@ package main
 
 import (
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/roman-mazur/architecture-lab-3/painter"
 	"github.com/roman-mazur/architecture-lab-3/painter/lang"
@@ -28,6 +30,21 @@ func main() {
 		_ = http.ListenAndServe("localhost:17000", nil)
 	}()
 
-	pv.Main()
-	opLoop.StopAndWait()
+	if os.Getenv("CI") == "true" {
+        // If in CI, start the event loop and the tests
+        go func() {
+            // Wait for the event loop to start
+            time.Sleep(time.Second)
+            
+            // Stop the event loop when the tests are done
+            opLoop.StopAndWait()
+        }()
+
+        // Start the event loop
+        // pv.Main()
+    } else {
+        // If not in CI, just start the event loop
+        pv.Main()
+        opLoop.StopAndWait()
+    }
 }

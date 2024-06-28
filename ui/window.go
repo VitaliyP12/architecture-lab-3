@@ -176,6 +176,7 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 		if e.Direction != mouse.DirPress { return; }
 		
 		pw.MoveAllFigures(int(e.X), int(e.Y))
+		pw.w.Send(paint.Event{})
 
 	case paint.Event:
 		// Малювання контенту вікна.
