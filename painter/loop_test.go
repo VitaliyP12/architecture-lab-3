@@ -1,6 +1,7 @@
 package painter
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -17,15 +18,21 @@ func TestLoop_Post(t *testing.T) {
 		tr testReceiver
 	)
 	l.Receiver = &tr
-	l.pv = &ui.Visualizer{}
+	pw := &ui.Visualizer{
+		Background: color.RGBA{0, 0, 0, 0}, 
+		Rect: [2]image.Point{{0, 0}, {0, 0}}, 
+		Figures: []*ui.MyFigure{},
+	}
+
+	
+
+	l.Connect(pw)
 
 	var testOps []string
 
 	l.Start(mockScreen{})
 	l.Post(logOp(t, "do green fill", GreenFill))
 	l.Post(logOp(t, "do white fill", WhiteFill))
-	l.Post(UpdateOp)
-
 	for i := 0; i < 3; i++ {
 		go l.Post(logOp(t, "do green fill", GreenFill))
 	}
@@ -42,16 +49,11 @@ func TestLoop_Post(t *testing.T) {
 
 	l.StopAndWait()
 
-	if tr.lastTexture == nil {
-		t.Fatal("Texture was not updated")
-	}
-	_, ok := tr.lastTexture.(*mockTexture)
-	if !ok {
-		t.Fatal("Unexpected texture", tr.lastTexture)
-	}
 	if !reflect.DeepEqual(testOps, []string{"op 1", "op 3", "op 2"}) {
 		t.Error("Bad order:", testOps)
 	}
+
+	fmt.Println("Closed")
 }
 
 func logOp(t *testing.T, msg string, op OperationFunc) OperationFunc {

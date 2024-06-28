@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -71,6 +72,11 @@ func (pw* Visualizer) AddFigure(t screen.Texture) {
 
 func (pw* Visualizer) Update(t screen.Texture) {
 	pw.drawDefaultUI()
+}
+
+func (pw* Visualizer) Close() {
+	fmt.Println("Close")
+	pw.w.Release()
 }
 
 type Visualizer struct {
@@ -193,6 +199,7 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 }
 
 func (pw *Visualizer) drawDefaultUI() {
+	if pw.Background == nil { pw.Background = color.White }
 	pw.w.Fill(pw.sz.Bounds(), pw.Background, draw.Src) // Фон.
 
 	for _, f := range pw.Figures {
