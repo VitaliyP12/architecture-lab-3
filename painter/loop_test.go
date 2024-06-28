@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/roman-mazur/architecture-lab-3/ui"
 	"golang.org/x/exp/shiny/screen"
 )
 
@@ -16,6 +17,7 @@ func TestLoop_Post(t *testing.T) {
 		tr testReceiver
 	)
 	l.Receiver = &tr
+	l.pv = &ui.Visualizer{}
 
 	var testOps []string
 
@@ -28,13 +30,13 @@ func TestLoop_Post(t *testing.T) {
 		go l.Post(logOp(t, "do green fill", GreenFill))
 	}
 
-	l.Post(OperationFunc(func(screen.Texture, *CurState) {
+	l.Post(OperationFunc(func(screen.Texture, *ui.Visualizer) {
 		testOps = append(testOps, "op 1")
-		l.Post(OperationFunc(func(screen.Texture, *CurState) {
+		l.Post(OperationFunc(func(screen.Texture, *ui.Visualizer) {
 			testOps = append(testOps, "op 2")
 		}))
 	}))
-	l.Post(OperationFunc(func(screen.Texture, *CurState) {
+	l.Post(OperationFunc(func(screen.Texture, *ui.Visualizer) {
 		testOps = append(testOps, "op 3")
 	}))
 
@@ -53,7 +55,7 @@ func TestLoop_Post(t *testing.T) {
 }
 
 func logOp(t *testing.T, msg string, op OperationFunc) OperationFunc {
-	return func(tx screen.Texture, state *CurState) {
+	return func(tx screen.Texture, state *ui.Visualizer) {
 		t.Log(msg)
 		op(tx, state)
 	}

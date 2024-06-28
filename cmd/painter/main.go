@@ -22,6 +22,7 @@ func main() {
 	//pv.Debug = true
 	pv.Title = "Simple painter"
 
+	opLoop.Connect(&pv)
 	pv.OnScreenReady = opLoop.Start
 	opLoop.Receiver = &pv
 

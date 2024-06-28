@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -61,15 +60,17 @@ func (f *MyFigure) Move(x, y int) {
 }
 
 func (pw* Visualizer) MoveAllFigures(x, y int) {
-	fmt.Println(x, y)
 	for _, f := range pw.Figures {
-		fmt.Println(x, y)
 		f.Move(x, y)
 	}
 }
 
 func (pw* Visualizer) AddFigure(t screen.Texture) {
 	pw.Figures = append(pw.Figures, GetFigure(100, 100))
+}
+
+func (pw* Visualizer) Update(t screen.Texture) {
+	pw.drawDefaultUI()
 }
 
 type Visualizer struct {
@@ -83,7 +84,9 @@ type Visualizer struct {
 
 	sz  size.Event
 	pos image.Rectangle
-	Figures   []*MyFigure
+	Figures []*MyFigure
+	Rect   [2]image.Point
+	Background color.Color
 }
 
 func (pw *Visualizer) Main() {
@@ -92,10 +95,6 @@ func (pw *Visualizer) Main() {
 	pw.pos.Max.X = 200
 	pw.pos.Max.Y = 200
 	driver.Main(pw.run)
-}
-
-func (pw *Visualizer) Update(t screen.Texture) {
-	pw.tx <- t
 }
 
 func (pw *Visualizer) run(s screen.Screen) {
@@ -118,6 +117,7 @@ func (pw *Visualizer) run(s screen.Screen) {
 
 	pw.w = w
 	pw.Figures = []*MyFigure{GetFigure(400, 400)}
+	pw.Background = color.Black
 
 	events := make(chan any)
 	go func() {
@@ -174,7 +174,6 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 		log.Printf("ERROR: %s", e)
 
 	case mouse.Event:
-		if t != nil { return; }
 		if e.Button != mouse.ButtonRight { return; }
 		if e.Direction != mouse.DirPress { return; }
 		
@@ -194,11 +193,14 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 }
 
 func (pw *Visualizer) drawDefaultUI() {
-	pw.w.Fill(pw.sz.Bounds(), color.Black, draw.Src) // Фон.
+	pw.w.Fill(pw.sz.Bounds(), pw.Background, draw.Src) // Фон.
 
 	for _, f := range pw.Figures {
 		f.VisualizeFigure(pw)
 	}
+
+	// Малювання квадрату.
+	pw.w.Fill(image.Rect(pw.Rect[0].X, pw.Rect[0].Y, pw.Rect[1].X, pw.Rect[1].Y), color.Black, draw.Src)
 
 	// Малювання білої рамки.
 	for _, br := range imageutil.Border(pw.sz.Bounds(), 10) {

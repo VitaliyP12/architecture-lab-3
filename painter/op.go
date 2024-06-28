@@ -25,13 +25,13 @@ func conv(args []string) ([]int, error) {
 // Operation змінює вхідну текстуру.
 type Operation interface {
 	// Do виконує зміну операції, повертаючи true, якщо текстура вважається готовою для відображення.
-	Do(t screen.Texture, state *CurState) (ready bool)
+	Do(t screen.Texture, pv *ui.Visualizer) (ready bool)
 }
 
 // OperationList групує список операції в одну.
 type OperationList []Operation
 
-func (ol OperationList) Do(t screen.Texture, state *CurState) (ready bool) {
+func (ol OperationList) Do(t screen.Texture, state *ui.Visualizer) (ready bool) {
 	for _, o := range ol {
 		ready = o.Do(t, state) || ready
 	}
@@ -43,36 +43,32 @@ var UpdateOp = updateOp{}
 
 type updateOp struct{}
 
-func (op updateOp) Do(t screen.Texture, state *CurState) bool {
-	t.Fill(t.Bounds(), state.background, screen.Src)
-	t.Fill(image.Rectangle{state.bgRect[0], state.bgRect[1]}, color.Black, screen.Src)
-	for _, item := range state.Figures {
-		item.Draw(t)
-	}
+func (op updateOp) Do(t screen.Texture, state *ui.Visualizer) bool {
+	state.Update(t)
 	return true
 }
 
 // OperationFunc використовується для перетворення функції оновлення текстури в Operation.
-type OperationFunc func(t screen.Texture, state *CurState)
+type OperationFunc func(t screen.Texture, state *ui.Visualizer)
 
-func (f OperationFunc) Do(t screen.Texture, state *CurState) bool {
+func (f OperationFunc) Do(t screen.Texture, state *ui.Visualizer) bool {
 	f(t, state)
 	return false
 }
 
 // WhiteFill зафарбовує тестуру у білий колір. Може бути викоистана як Operation через OperationFunc(WhiteFill).
-func WhiteFill(t screen.Texture, state *CurState) {
-	state.background = color.White
+func WhiteFill(t screen.Texture, state *ui.Visualizer) {
+	state.Background = color.White
 }
 
 // GreenFill зафарбовує тестуру у зелений колір. Може бути викоистана як Operation через OperationFunc(GreenFill).
-func GreenFill(t screen.Texture, state *CurState) {
-	state.background = color.RGBA{0, 255, 0, 255}
+func GreenFill(t screen.Texture, state *ui.Visualizer) {
+	state.Background = color.RGBA{0, 255, 0, 255}
 }
 
-func Reset(t screen.Texture, state *CurState) {
-	state.background = color.Black
-	state.bgRect = [2]image.Point{{0, 0}, {0, 0}}
+func Reset(t screen.Texture, state *ui.Visualizer) {
+	state.Background = color.Black
+	state.Rect = [2]image.Point{{0, 0}, {0, 0}}
 	state.Figures = []*ui.MyFigure{}
 }
 
@@ -86,10 +82,10 @@ func DrawRectangle(args []string) OperationFunc {
 		fmt.Println(err)
 		return nil
 	}
-	return func(t screen.Texture, state *CurState) {
+	return func(t screen.Texture, state *ui.Visualizer) {
 		if err == nil && len(cords) == 4 {
-			state.bgRect[0] = image.Point{int(cords[0]), int(cords[1])}
-			state.bgRect[1] = image.Point{int(cords[2]), int(cords[3])}
+			state.Rect[0] = image.Point{int(cords[0]), int(cords[1])}
+			state.Rect[1] = image.Point{int(cords[2]), int(cords[3])}
 		}
 	}
 }
@@ -104,7 +100,7 @@ func Figure(args []string) OperationFunc {
 		fmt.Println(err)
 		return nil
 	}
-	return func(t screen.Texture, state *CurState) {
+	return func(t screen.Texture, state *ui.Visualizer) {
 		if err == nil && len(cords) == 2 {
 			f := ui.GetFigure(cords[0], cords[1])
 			state.Figures = append(state.Figures, f)
@@ -122,7 +118,7 @@ func Move(args []string) OperationFunc {
 		fmt.Println(err)
 		return nil
 	}
-	return func(t screen.Texture, state *CurState) {
+	return func(t screen.Texture, state *ui.Visualizer) {
 		if err == nil && len(cords) == 2 {
 			f := ui.GetFigure(cords[0], cords[1])
 			state.Figures = []*ui.MyFigure{f}

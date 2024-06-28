@@ -2,7 +2,6 @@ package painter
 
 import (
 	"image"
-	"image/color"
 	"sync"
 
 	"github.com/roman-mazur/architecture-lab-3/ui"
@@ -14,42 +13,35 @@ type Receiver interface {
 	Update(t screen.Texture)
 }
 
-type CurState struct {
-	background color.Color
-	Figures    []*ui.MyFigure
-	bgRect     [2]image.Point
-}
-
 // Loop реалізує цикл подій для формування текстури отриманої через виконання операцій отриманих з внутрішньої черги.
 type Loop struct {
 	Receiver Receiver
 	buffer screen.Texture
 
-	state CurState
-
 	mq messageQueue
 
 	stop    chan struct{}
 	stopReq bool
+
+	pv *ui.Visualizer
 }
 
 var size = image.Pt(800, 800)
+
+func (l *Loop) Connect(pv *ui.Visualizer) {
+	l.pv = pv
+}
 
 // Start запускає цикл подій. Цей метод потрібно запустити до того, як викликати на ньому будь-які інші методи.
 func (l *Loop) Start(s screen.Screen) {
 	l.buffer, _ = s.NewTexture(size)
 	l.stop = make(chan struct{})
-	l.state = CurState{
-		background: color.Black,
-		Figures:    []*ui.MyFigure{ui.GetFigure(400, 400)},
-		bgRect:     [2]image.Point{{0, 0}, {0, 0}},
-	}
 
 	go func() {
 		for !(l.stopReq && l.mq.empty()) {
 			op := l.mq.pull()
 
-			update := op.Do(l.buffer, &l.state)
+			update := op.Do(l.buffer, l.pv)
 
 			if update {
 				l.Receiver.Update(l.buffer)
@@ -66,7 +58,7 @@ func (l *Loop) Post(op Operation) {
 
 // StopAndWait сигналізує про необхідність завершити цикл та блокується до моменту його повної зупинки.
 func (l *Loop) StopAndWait() {
-	l.Post(OperationFunc(func(screen.Texture, *CurState) {
+	l.Post(OperationFunc(func(screen.Texture, *ui.Visualizer) {
 		l.stopReq = true
 	}))
 
