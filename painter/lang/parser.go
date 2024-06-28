@@ -16,7 +16,7 @@ func recOp(operation painter.OperationFunc) painter.Operation {
 	if operation == nil {
 		return nil
 	}
-	return painter.OperationFunc(operation);
+	return painter.OperationFunc(operation)
 }
 
 func (p *Parser) ParseCommands(name string, args []string) painter.Operation {
@@ -50,7 +50,9 @@ func (p *Parser) Parse(in io.Reader) ([]painter.Operation, error) {
 		args := sliced[1:]
 		com := p.ParseCommands(sliced[0], args)
 
-		if com == nil { continue }
+		if com == nil {
+			continue
+		}
 
 		res = append(res, com)
 	}

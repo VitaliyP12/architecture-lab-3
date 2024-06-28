@@ -31,20 +31,20 @@ func TestParser_CommandParser(t *testing.T) {
 		{
 			name:         "draw rectangle",
 			commandName:  "bgrect",
-			args:         []string{"0.5", "0.6", "30", "40"},
-			expectedFunc: painter.DrawRectangle([]string{"0.5", "0.6", "30", "40"}),
+			args:         []string{"5", "6", "30", "40"},
+			expectedFunc: painter.DrawRectangle([]string{"5", "6", "30", "40"}),
 		},
 		{
 			name:         "figure",
 			commandName:  "figure",
-			args:         []string{"0.25", "0.25"},
-			expectedFunc: painter.Figure([]string{"0.25", "0.25"}),
+			args:         []string{"25", "25"},
+			expectedFunc: painter.Figure([]string{"25", "25"}),
 		},
 		{
 			name:         "move",
 			commandName:  "move",
-			args:         []string{"0.56", "0.57"},
-			expectedFunc: painter.Move([]string{"0.56", "0.57"}),
+			args:         []string{"56", "57"},
+			expectedFunc: painter.Move([]string{"56", "57"}),
 		},
 		{
 			name:         "reset",
@@ -89,7 +89,7 @@ func TestParser_Parse(t *testing.T) {
 		},
 		{
 			name:          "command with args",
-			input:         "bgrect 0.55 0.45 30 50\n",
+			input:         "bgrect 55 45 30 50\n",
 			expectedCount: 1,
 		},
 		{

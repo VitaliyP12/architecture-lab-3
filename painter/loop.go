@@ -41,7 +41,7 @@ func (l *Loop) Start(s screen.Screen) {
 	l.stop = make(chan struct{})
 	l.state = CurState{
 		background: color.Black,
-		Figures:    []*ui.MyFigure{},
+		Figures:    []*ui.MyFigure{ui.GetFigure(400, 400)},
 		bgRect:     [2]image.Point{{0, 0}, {0, 0}},
 	}
 

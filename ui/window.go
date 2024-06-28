@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -60,7 +61,9 @@ func (f *MyFigure) Move(x, y int) {
 }
 
 func (pw* Visualizer) MoveAllFigures(x, y int) {
+	fmt.Println(x, y)
 	for _, f := range pw.Figures {
+		fmt.Println(x, y)
 		f.Move(x, y)
 	}
 }

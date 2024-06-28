@@ -10,14 +10,14 @@ import (
 	"golang.org/x/exp/shiny/screen"
 )
 
-func conv(args []string) ([]float64, error) {
-	parsedValues := make([]float64, len(args))
+func conv(args []string) ([]int, error) {
+	parsedValues := make([]int, len(args))
 	for i, str := range args {
-		num, err := strconv.ParseFloat(str, 64)
+		num, err := strconv.ParseInt(str, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		parsedValues[i] = num
+		parsedValues[i] = int(num)
 	}
 	return parsedValues, nil
 }
@@ -62,12 +62,12 @@ func (f OperationFunc) Do(t screen.Texture, state *CurState) bool {
 
 // WhiteFill зафарбовує тестуру у білий колір. Може бути викоистана як Operation через OperationFunc(WhiteFill).
 func WhiteFill(t screen.Texture, state *CurState) {
-	t.Fill(t.Bounds(), color.White, screen.Src)
+	state.background = color.White
 }
 
 // GreenFill зафарбовує тестуру у зелений колір. Може бути викоистана як Operation через OperationFunc(GreenFill).
 func GreenFill(t screen.Texture, state *CurState) {
-	t.Fill(t.Bounds(), color.RGBA{G: 0xff, A: 0xff}, screen.Src)
+	state.background = color.RGBA{0, 255, 0, 255}
 }
 
 func Reset(t screen.Texture, state *CurState) {
@@ -81,13 +81,12 @@ func DrawRectangle(args []string) OperationFunc {
 		fmt.Println("Wrong amount of arguments to draw a rectangle")
 		return nil
 	}
-	floatArgs, err := conv(args)
+	cords, err := conv(args)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
 	return func(t screen.Texture, state *CurState) {
-		cords, err := convToCoords(t.Bounds().Dx(), t.Bounds().Dy(), floatArgs)
 		if err == nil && len(cords) == 4 {
 			state.bgRect[0] = image.Point{int(cords[0]), int(cords[1])}
 			state.bgRect[1] = image.Point{int(cords[2]), int(cords[3])}
@@ -100,13 +99,12 @@ func Figure(args []string) OperationFunc {
 		fmt.Println("Wrong amount of arguments to draw figures")
 		return nil
 	}
-	floatArgs, err := conv(args)
+	cords, err := conv(args)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
 	return func(t screen.Texture, state *CurState) {
-		cords, err := convToCoords(t.Bounds().Dx(), t.Bounds().Dy(), floatArgs)
 		if err == nil && len(cords) == 2 {
 			f := ui.GetFigure(cords[0], cords[1])
 			state.Figures = append(state.Figures, f)
@@ -119,37 +117,15 @@ func Move(args []string) OperationFunc {
 		fmt.Println("Wrong amount of arguments to move figures")
 		return nil
 	}
-	floatArgs, err := conv(args)
+	cords, err := conv(args)
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
 	return func(t screen.Texture, state *CurState) {
-		cords, err := convToCoords(t.Bounds().Dx(), t.Bounds().Dy(), floatArgs)
 		if err == nil && len(cords) == 2 {
 			f := ui.GetFigure(cords[0], cords[1])
 			state.Figures = []*ui.MyFigure{f}
 		}
 	}
-}
-
-func convToCoords(width int, height int, floatArgs []float64) ([]int, error) {
-	if len(floatArgs)%2 != 0 {
-		return nil, fmt.Errorf("Wrong amount of arguments!")
-	}
-
-	cords := make([]int, len(floatArgs))
-
-	fWidth := float64(width)
-	fHeight := float64(height)
-
-	for index := range floatArgs {
-		if index%2 == 0 {
-			cords[index] = int(fWidth * floatArgs[index])
-		} else {
-			cords[index] = int(fHeight * floatArgs[index])
-		}
-	}
-
-	return cords, nil
 }
